@@ -376,6 +376,23 @@
         <p class="balance-amount">669,350.00</p>
         <p class="balance-currency">XOF</p>
     </div>
+
+    <!-- Ajoutez cette section dans votre page d'accueil après le solde -->
+<div class="pending-withdrawals-section" style="background: white; border-radius: var(--border-radius); padding: 20px; margin-top: 20px; box-shadow: var(--box-shadow);">
+    <h3 style="margin-bottom: 15px; color: var(--dark-color); display: flex; align-items: center;">
+        <i class="fas fa-clock" style="color: var(--warning-color); margin-right: 10px;"></i>
+        Retraits en cours
+    </h3>
+    
+    <div id="pendingWithdrawalsList">
+        <!-- Les retraits en cours seront affichés ici -->
+    </div>
+    
+    <div id="noWithdrawalsMessage" style="text-align: center; padding: 20px; color: var(--text-light);">
+        <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px; color: var(--success-color);"></i>
+        <p>Aucun retrait en cours</p>
+    </div>
+</div>
     
     <!-- Boutons d'action -->
     <div class="action-buttons">
@@ -463,6 +480,71 @@
         Mon compte
     </a>
 </nav>
+
+<script>
+// Dans votre index.html, ajoutez ce script pour afficher les retraits en cours
+function displayPendingWithdrawals() {
+    const pendingWithdrawals = JSON.parse(localStorage.getItem('pendingWithdrawals') || '[]');
+    const container = document.getElementById('pendingWithdrawalsList');
+    const noWithdrawalsMsg = document.getElementById('noWithdrawalsMessage');
+    
+    if (pendingWithdrawals.length === 0) {
+        container.innerHTML = '';
+        noWithdrawalsMsg.style.display = 'block';
+        return;
+    }
+    
+    noWithdrawalsMsg.style.display = 'none';
+    container.innerHTML = '';
+    
+    pendingWithdrawals.forEach(withdrawal => {
+        const networkNames = {
+            'orange': 'Orange Money',
+            'wave': 'Wave',
+            'moov': 'Moov Money'
+        };
+        
+        const withdrawalDate = new Date(withdrawal.date);
+        const formattedDate = `${withdrawalDate.getDate()}/${withdrawalDate.getMonth()+1}/${withdrawalDate.getFullYear()} ${withdrawalDate.getHours()}:${withdrawalDate.getMinutes().toString().padStart(2, '0')}`;
+        
+        const withdrawalElement = document.createElement('div');
+        withdrawalElement.className = 'withdrawal-item';
+        withdrawalElement.style.cssText = `
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--warning-color);
+        `;
+        
+        withdrawalElement.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <strong style="color: var(--dark-color);">${networkNames[withdrawal.network] || withdrawal.network}</strong>
+                <span style="color: var(--warning-color); font-size: 0.9rem;">
+                    <i class="fas fa-spinner fa-pulse"></i> En cours
+                </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="color: var(--text-light); font-size: 0.9rem;">${withdrawal.phoneNumber}</div>
+                    <div style="color: var(--text-light); font-size: 0.8rem;">${formattedDate}</div>
+                </div>
+                <div style="font-weight: bold; color: var(--dark-color);">
+                    ${withdrawal.amount.toLocaleString('fr-FR')} XOF
+                </div>
+            </div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; color: var(--warning-color); font-size: 0.8rem;">
+                <i class="fas fa-info-circle"></i> En attente d'approbation manuelle
+            </div>
+        `;
+        
+        container.appendChild(withdrawalElement);
+    });
+}
+
+// Appeler la fonction au chargement de la page
+document.addEventListener('DOMContentLoaded', displayPendingWithdrawals);
+</script>
 
 </body>
 </html>
